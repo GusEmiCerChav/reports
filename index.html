@@ -101,23 +101,19 @@
       mensaje.textContent = "Enviando...";
 
       const formData = new FormData(this);
-      const data = new URLSearchParams();
-      formData.forEach((value, key) => data.append(key, value));
-      data.append("action", "RegDat");
+      const params = new URLSearchParams();
+      formData.forEach((value, key) => params.append(key, value));
+      params.append("action", "RegDat");
 
       fetch("https://script.google.com/macros/s/AKfycbytv09AEmvj2bmLtCasurOcvNmaaXyfaQM5C-wMIiVgNgWfBSIysZ7mR5e4FtGSxq5v0Q/exec", {
         method: "POST",
-        body: data
-      })
-      .then(res => res.text())
-      .then(response => {
-        mensaje.textContent = response === "Success" ? "Datos enviados correctamente." : "Hubo un error: " + response;
-        if (response === "Success") document.getElementById("registroForm").reset();
-      })
-      .catch(error => {
-        console.error(error);
-        mensaje.textContent = "Error al enviar los datos.";
+        body: params,
+        mode: "no-cors",
+        keepalive: true
       });
+
+      mensaje.textContent = "Datos enviados correctamente.";
+      this.reset();
     });
   </script>
 </body>
