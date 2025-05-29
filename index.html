@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Formulario de Registro</title>
+  <title>Registro de Golpes</title>
   <style>
     body {
       background-color: #f4f6f8;
@@ -19,14 +19,14 @@
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      max-width: 400px;
+      max-width: 500px;
       width: 100%;
     }
 
     h2 {
       text-align: center;
       color: #333;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
     }
 
     label {
@@ -36,6 +36,7 @@
     }
 
     input[type="text"],
+    textarea,
     input[type="submit"] {
       width: 100%;
       padding: 0.7rem;
@@ -43,6 +44,11 @@
       border: 1px solid #ccc;
       border-radius: 8px;
       box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
     }
 
     input[type="submit"] {
@@ -60,18 +66,28 @@
     .message {
       text-align: center;
       margin-top: 1rem;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Registro</h2>
+    <h2>Registro de Golpes</h2>
     <form id="registroForm">
       <label for="nombre">Nombre:</label>
       <input type="text" name="nombre" required>
 
-      <label for="dato">Dato:</label>
-      <input type="text" name="dato" required>
+      <label for="d1">D1:</label>
+      <input type="text" name="d1">
+
+      <label for="d2">D2:</label>
+      <input type="text" name="d2">
+
+      <label for="d3">D3:</label>
+      <input type="text" name="d3">
+
+      <label for="observaciones">Observaciones:</label>
+      <textarea name="observaciones"></textarea>
 
       <input type="submit" value="Enviar">
     </form>
@@ -85,22 +101,21 @@
       mensaje.textContent = "Enviando...";
 
       const formData = new FormData(this);
-      const data = {};
-      formData.forEach((value, key) => data[key] = value);
+      const data = new URLSearchParams();
+      formData.forEach((value, key) => data.append(key, value));
+      data.append("action", "RegDat");
 
-      fetch("TU_URL_DE_SCRIPT", {
+      fetch("https://script.google.com/macros/s/AKfycbytv09AEmvj2bmLtCasurOcvNmaaXyfaQM5C-wMIiVgNgWfBSIysZ7mR5e4FtGSxq5v0Q/exec", {
         method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json"
-        }
+        body: data
       })
-      .then(response => response.text())
-      .then(data => {
-        mensaje.textContent = "Datos enviados correctamente.";
-        this.reset();
+      .then(res => res.text())
+      .then(response => {
+        mensaje.textContent = response === "Success" ? "Datos enviados correctamente." : "Hubo un error: " + response;
+        if (response === "Success") document.getElementById("registroForm").reset();
       })
       .catch(error => {
+        console.error(error);
         mensaje.textContent = "Error al enviar los datos.";
       });
     });
