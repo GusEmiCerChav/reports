@@ -1,83 +1,124 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Registro de Datos</title>
+  <title>Registro de Golpes</title>
   <style>
     body {
+      background-color: #f4f6f8;
       font-family: Arial, sans-serif;
-      margin: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
-    input, textarea, button {
-      display: block;
-      margin-bottom: 10px;
+
+    .container {
+      background-color: #ffffff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      max-width: 500px;
       width: 100%;
-      padding: 8px;
     }
-    #estado {
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      color: #555;
+    }
+
+    input[type="text"],
+    textarea,
+    input[type="submit"] {
+      width: 100%;
+      padding: 0.7rem;
+      margin-top: 0.3rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    input[type="submit"] {
+      background-color: #007bff;
+      color: white;
       font-weight: bold;
-      margin-top: 20px;
+      cursor: pointer;
+      margin-top: 1.5rem;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2>Registro de Golpes</h2>
+    <form id="registroForm">
+      <label for="nombre">Nombre:</label>
+      <input type="text" name="nombre" required>
 
-  <h2>Formulario de Registro</h2>
+      <label for="d1">D1:</label>
+      <input type="text" name="d1">
 
-  <input type="text" id="nombre" placeholder="Nombre del Técnico" required />
-  <input type="text" id="d1" placeholder="Dato D1" />
-  <input type="text" id="d2" placeholder="Dato D2" />
-  <input type="text" id="d3" placeholder="Dato D3" />
-  <textarea id="observaciones" placeholder="Observaciones"></textarea>
+      <label for="d2">D2:</label>
+      <input type="text" name="d2">
 
-  <button onclick="enviarDatos()">Enviar Datos</button>
+      <label for="d3">D3:</label>
+      <input type="text" name="d3">
 
-  <div id="estado"></div>
+      <label for="observaciones">Observaciones:</label>
+      <textarea name="observaciones"></textarea>
+
+      <input type="submit" value="Enviar">
+    </form>
+    <div class="message" id="mensaje"></div>
+  </div>
 
   <script>
-    function enviarDatos() {
-      const estado = document.getElementById("estado");
-      estado.textContent = "Enviando...";
+    document.getElementById("registroForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const mensaje = document.getElementById("mensaje");
+      mensaje.textContent = "Enviando...";
 
-      const formData = new FormData();
-      formData.append("action", "RegDat");
-      formData.append("nombre", document.getElementById("nombre").value);
-      formData.append("d1", document.getElementById("d1").value);
-      formData.append("d2", document.getElementById("d2").value);
-      formData.append("d3", document.getElementById("d3").value);
-      formData.append("observaciones", document.getElementById("observaciones").value);
-
-      const controller = new AbortController();
-      const timeout = setTimeout(() => {
-        controller.abort();
-        estado.textContent = "Error: tiempo de espera superado (más de 40 segundos).";
-      }, 40000); // 40 segundos
+      const formData = new FormData(this);
+      const data = new URLSearchParams();
+      formData.forEach((value, key) => data.append(key, value));
+      data.append("action", "RegDat");
 
       fetch("https://script.google.com/macros/s/AKfycbytv09AEmvj2bmLtCasurOcvNmaaXyfaQM5C-wMIiVgNgWfBSIysZ7mR5e4FtGSxq5v0Q/exec", {
         method: "POST",
-        body: formData,
-        signal: controller.signal
+        body: data
       })
-      .then(response => response.text())
-      .then(text => {
-        clearTimeout(timeout);
-        if (text.trim() === "Success") {
-          estado.textContent = "Datos enviados correctamente.";
-        } else {
-          estado.textContent = "Error en la respuesta: " + text;
-        }
+      .then(res => res.text())
+      .then(response => {
+        mensaje.textContent = response === "Success" ? "Datos enviados correctamente." : "Hubo un error: " + response;
+        if (response === "Success") document.getElementById("registroForm").reset();
       })
       .catch(error => {
-        clearTimeout(timeout);
-        if (error.name === 'AbortError') {
-          estado.textContent = "Error: la solicitud fue cancelada por tiempo.";
-        } else {
-          console.error(error);
-          estado.textContent = "Error al enviar los datos.";
-        }
+        console.error(error);
+        mensaje.textContent = "Error al enviar los datos.";
       });
-    }
+    });
   </script>
-
 </body>
 </html>
